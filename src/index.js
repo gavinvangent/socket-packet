@@ -4,7 +4,7 @@ class SocketPacket {
     socket._idSeed = 1
 
     socket.on('data', data => this.onData(data))
-    socket.send = data => socket.write(this.createPacket(data))
+    socket.send = (data, cb) => socket.write(this.createPacket(data), cb)
 
     this._socket = socket
     this._logger = logger
