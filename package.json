@@ -1,6 +1,6 @@
 {
   "name": "socket-packet",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
