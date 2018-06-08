@@ -40,12 +40,240 @@ describe('SocketPacket', () => {
     })
   })
 
+  describe('#onData', () => {
+    describe('should swallow empty data and not emit any packet info', () => {
+      const data = ''
+
+      it('invoking onData', () => {
+        socket.on('packet', packet => {
+          assert.fail('Should not get here')
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', () => {
+        socket.on('packet', packet => {
+          assert.fail('Should not get here')
+        })
+        socket.emit('data', data)
+      })
+    })
+
+    describe('should swallow well formed data that has no content and not emit any packet info', () => {
+      const data = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
+
+      it('invoking onData', () => {
+        socket.on('packet', packet => {
+          assert.fail('Should not get here')
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', () => {
+        socket.on('packet', packet => {
+          assert.fail('Should not get here')
+        })
+        socket.emit('data', data)
+      })
+    })
+
+    describe('should emit once for a single packet in a whole data object', () => {
+      it('invoking onData', () => {
+        const message = 'abc'
+        const data = socketPacket.createPacket(message)
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [message])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', () => {
+        const message = 'abc'
+        const data = socketPacket.createPacket(message)
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [message])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socket.emit('data', data)
+      })
+    })
+
+    describe('should emit once for a single packet in a data object that has one item and the start of another but no end', () => {
+      it('invoking onData', () => {
+        const message = 'abc'
+        const data = `${socketPacket.createPacket(message)}${SocketPacket.PACKET_STARTS_WITH}123`
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [message])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', () => {
+        const message = 'abc'
+        const data = `${socketPacket.createPacket(message)}${SocketPacket.PACKET_STARTS_WITH}123`
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [message])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socket.emit('data', data)
+      })
+    })
+
+    describe('should emit twice for two packets in a single data object', () => {
+      it('invoking onData', () => {
+        const messageA = 'abc'
+        const messageB = '123'
+        const data = `${socketPacket.createPacket(messageA)}${socketPacket.createPacket(messageB)}`
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [messageA, messageB])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+
+          if (handledPackets.length === 2) {
+            runChecks()
+          }
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', () => {
+        const messageA = 'abc'
+        const messageB = '123'
+        const data = `${socketPacket.createPacket(messageA)}${socketPacket.createPacket(messageB)}`
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, [messageA, messageB])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+
+          if (handledPackets.length === 2) {
+            runChecks()
+          }
+        })
+        socket.emit('data', data)
+      })
+    })
+
+    describe('should emit once for a packet that is split amoungst 2 data objects', () => {
+      it('invoking onData', () => {
+        const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
+        const dataB = `abc${SocketPacket.PACKET_ENDS_WITH}`
+
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, ['123abc'])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socketPacket.onData(dataA)
+        socketPacket.onData(dataB)
+      })
+
+      it('via emit event', () => {
+        const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
+        const dataB = `abc${SocketPacket.PACKET_ENDS_WITH}`
+
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, ['123abc'])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socket.emit('data', dataA)
+        socket.emit('data', dataB)
+      })
+    })
+
+    describe('should emit once for a packet that is split amoungst 3 data objects', () => {
+      it('invoking onData', () => {
+        const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
+        const dataB = `abc`
+        const dataC = `!@#$${SocketPacket.PACKET_ENDS_WITH}`
+
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, ['123abc!@#$'])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socketPacket.onData(dataA)
+        socketPacket.onData(dataB)
+        socketPacket.onData(dataC)
+      })
+
+      it('via emit event', () => {
+        const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
+        const dataB = `abc`
+        const dataC = `!@#$${SocketPacket.PACKET_ENDS_WITH}`
+
+        const handledPackets = []
+
+        const runChecks = () => {
+          assert.deepEqual(handledPackets, ['123abc!@#$'])
+        }
+
+        socket.on('packet', packet => {
+          handledPackets.push(packet)
+          runChecks()
+        })
+        socket.emit('data', dataA)
+        socket.emit('data', dataB)
+        socket.emit('data', dataC)
+      })
+    })
+  })
+
   describe('#createPacket', () => {
-    const datas = ['', 'hello world', 'This is some FUNNY business YO@@!']
+    const datas = [undefined, null, '', 'hello world', 'This is some FUNNY business YO@@!']
 
     datas.forEach(data => {
-      it(`should return the created packet with defualts when using the default constructor (${data})`, () => {
-        const expected = `${SocketPacket.PACKET_STARTS_WITH}${data}${SocketPacket.PACKET_ENDS_WITH}`
+      it(`should return the created packet with defaults when using the default constructor (${data})`, () => {
+        const expected = `${SocketPacket.PACKET_STARTS_WITH}${data || ''}${SocketPacket.PACKET_ENDS_WITH}`
         const result = socketPacket.createPacket(data)
 
         assert.equal(result, expected)
@@ -60,12 +288,12 @@ describe('SocketPacket', () => {
 
       let data // = undefined
       let packet = socketPacket.createPacket(data)
-      let expected = `${SocketPacket.PACKET_STARTS_WITH}${data}${SocketPacket.PACKET_ENDS_WITH}`
+      let expected = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = null
       packet = socketPacket.createPacket(data)
-      expected = `${SocketPacket.PACKET_STARTS_WITH}${data}${SocketPacket.PACKET_ENDS_WITH}`
+      expected = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = ''

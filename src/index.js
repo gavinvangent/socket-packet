@@ -23,7 +23,7 @@ class SocketPacket {
 
   onData (data) {
     if (!this._socket._bufferId) {
-      this._socket._bufferId = this._socket_idSeed++
+      this._socket._bufferId = this._socket._idSeed++
       this._socket._packetBuffers[this._socket._bufferId] = {
         buffer: ''
       }
@@ -69,20 +69,25 @@ class SocketPacket {
 
     packets.forEach(packet => {
       let strippedPacket = packet.replace(this._startsWith, '').replace(this._endsWith, '')
+      if (!strippedPacket) {
+        return
+      }
+
       let parsedPacket
 
       try {
         parsedPacket = this.parsePacket(strippedPacket)
         this._socket.emit('packet', parsedPacket)
       } catch (err) {
+        console.log(err)
         this.log('error', `Packet parse failed!: ${strippedPacket}`)
-        this.emit('error', new Error('Parsing of inbound packet errored', err))
+        this._socket.emit('error', new Error('Parsing of inbound packet errored', err))
       }
     })
   }
 
   createPacket (data) {
-    return `${this._startsWith}${this._packetStringifier(data)}${this._endsWith}`
+    return `${this._startsWith}${this._packetStringifier(data) || ''}${this._endsWith}`
   }
 
   parsePacket (packet) {
