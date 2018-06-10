@@ -79,7 +79,6 @@ class SocketPacket {
         parsedPacket = this.parsePacket(strippedPacket)
         this._socket.emit('packet', parsedPacket)
       } catch (err) {
-        console.log(err)
         this.log('error', `Packet parse failed!: ${strippedPacket}`)
         this._socket.emit('error', new Error('Parsing of inbound packet errored', err))
       }
