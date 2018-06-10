@@ -35,11 +35,11 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
 - socket: instance of a [net.Socket](https://nodejs.org/docs/latest/api/net.html#net_class_net_socket)
 - logger: {optional} <Object> instance of a [winston](https://www.npmjs.com/package/winston) or similar logger
 - opts: {optional} <Object> with any customized options for SocketPacket
-  - packetStrigifier: {optional} <function> - see (packetStringifier)[#packetStringifier]
-  - packetParser: {optional} <function> - see (packetStringifier)[#packetParser]
-  - startsWith: {optional} <string> - see (packetStringifier)[#startsWith]
-  - endsWith: {optional} <string> - see (packetStringifier)[#endsWith]
-  - encoding: {optional} <string> - see (packetStringifier)[#encoding]
+  - packetStrigifier: {optional} <function> - see [packetStringifier](#packetStringifier)
+  - packetParser: {optional} <function> - see [packetParser](#packetParser)
+  - startsWith: {optional} <string> - see [startsWith](#startsWith)
+  - endsWith: {optional} <string> - see [endsWith](#endsWith)
+  - encoding: {optional} <string> - see [encoding](#encoding)
 
 ## .on('packet', packet => {})
 
