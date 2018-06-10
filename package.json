@@ -5,7 +5,6 @@
   "main": "./lib/index.js",
   "scripts": {
     "pretest": "standard | snazzy",
-    "precommit": "npm run test && npm run build",
     "build": "babel src -d lib",
     "prepublishOnly": "npm run test && npm run build",
     "test": "mocha"
