@@ -4,13 +4,13 @@ class SocketPacket {
     socket._idSeed = 1
 
     socket.on('data', data => this.onData(data))
-    socket.send = (data, cb) => socket.write(this.createPacket(data), cb)
+    socket.send = (data, cb) => socket.write(this.package(data), cb)
 
     this._socket = socket
     this._logger = logger
 
     this._packetStringifier = opts.packetStringifier || (packet => packet && packet.toString())
-    this._packetParser = opts.packetParser || (packet => packet)
+    this._packetParser = opts.packetParser || (packet => packet && packet.toString())
 
     this._startsWith = opts.startsWith || SocketPacket.PACKET_STARTS_WITH
     this._startLen = this._startsWith.length
@@ -86,7 +86,7 @@ class SocketPacket {
     })
   }
 
-  createPacket (data) {
+  package (data) {
     return `${this._startsWith}${this._packetStringifier(data) || ''}${this._endsWith}`
   }
 

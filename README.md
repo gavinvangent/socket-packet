@@ -35,12 +35,81 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
 - socket: \<Object\> instance of a [net.Socket](https://nodejs.org/docs/latest/api/net.html#net_class_net_socket)
 - logger: {optional} \<Object\> instance of a [winston](https://www.npmjs.com/package/winston) or similar logger
 - opts: {optional} \<Object\> with any customized options for SocketPacket
-  - packetStrigifier: {optional} \<function\> - see [packetStringifier](#packetStringifier)
-  - packetParser: {optional} \<function\> - see [packetParser](#packetParser)
   - startsWith: {optional} \<string\> - see [startsWith](#startsWith)
   - endsWith: {optional} \<string\> - see [endsWith](#endsWith)
   - encoding: {optional} \<string\> - see [encoding](#encoding)
+  - packetStrigifier: {optional} \<function\> - see [packetStringifier](#packetStringifier)
+  - packetParser: {optional} \<function\> - see [packetParser](#packetParser)
 
-## .on('packet', packet => {})
+```js
+SocketPacket.bind(socket, logger, opts)
+```
+
+## Event: 'packet'
 
 `socket-packet` adds a listener to the `data` event of the socket, "unwraps" the payload into their separate packets, and for each valid packet contained, emits the `packet` event
+
+```js
+socket.on('packet', packet => {
+  if (packet === 'ping') {
+    socket.send('pong')
+  }
+})
+```
+
+## .send(data[, callback])
+
+`socket-packet` binds a `.send` function to the socket. Using this method will package the provided data/message and the write it to the socket
+
+- callback: {Optional} \<function\> once the data has been flushed on the socket, this callback will be invoked, as expected when using [net.Socket.write()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_write_data_encoding_callback)
+
+## Options
+
+### startsWith
+
+This library is all about packaging messages/data being transferred over a socket. Packages are wrapped with a default starting value `-!@@!-`, which is used to indicate the start of a new packet. If the server/client prefixes packets with a different value, be sure to set this to the same value
+
+### endsWith
+
+This library is all about packaging messages/data being transferred over a socket. Packages are wrapped with a default ending value `-@!!@-`, which is used to indicate the end of a new packet. If the server/client suffixes packets with a different value, be sure to set this to the same value
+
+### encoding
+
+The encoding to use when parsing/stringifying packets, default is'utf8'
+Caveat: if you use [socket.setEncoding()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_setencoding_encoding) and it does not match this encoding, problems may be expeienced ... I have not yet tested this
+
+### packetStrigifier
+
+This function is used when socket.send(data[, cb]) is invoked to stringify the message/data object before writing to the socket ... The default returns the packet as is, as a string:
+
+```js
+opts = {
+  packetStrigifier: packet => packet && packet.toString()
+}
+```
+
+if, for example, all packets are expected to be `application/json`, you can use this:
+
+```js
+opts = {
+  packetStrigifier: packet => packet && JSON.stringify(packet)
+}
+```
+
+### packetParser
+
+This function is used when the `data` event is emitted and a packet is extracted to parse the packet to a specified format ... The default sends the packet is, as a string:
+
+```js
+opts = {
+  packetParser: packet => packet && packet.toString()
+}
+```
+
+if, for example, all packets are expected to be `application/json`, you can use this:
+
+```js
+opts = {
+  packetParser: packet => packet && JSON.parse(packet)
+}
+```
