@@ -69,7 +69,7 @@ socket.send('ping')
 socket.send({ hello: 'world'})
 ```
 
-**NB:** although you are sending a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetParser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetStringifier) to safely get a stringified version of the JSON object
+**NB:** although you are sending a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetParser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetStringifier) to safely get a stringified version of the JSON object to write to the socket
 
 ## Options
 
