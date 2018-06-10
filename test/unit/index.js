@@ -80,7 +80,7 @@ describe('SocketPacket', () => {
     describe('should emit once for a single packet in a whole data object', () => {
       it('invoking onData', () => {
         const message = 'abc'
-        const data = socketPacket.createPacket(message)
+        const data = socketPacket.package(message)
         const handledPackets = []
 
         const runChecks = () => {
@@ -96,7 +96,7 @@ describe('SocketPacket', () => {
 
       it('via emit event', () => {
         const message = 'abc'
-        const data = socketPacket.createPacket(message)
+        const data = socketPacket.package(message)
         const handledPackets = []
 
         const runChecks = () => {
@@ -114,7 +114,7 @@ describe('SocketPacket', () => {
     describe('should emit once for a single packet in a data object that has one item and the start of another but no end', () => {
       it('invoking onData', () => {
         const message = 'abc'
-        const data = `${socketPacket.createPacket(message)}${SocketPacket.PACKET_STARTS_WITH}123`
+        const data = `${socketPacket.package(message)}${SocketPacket.PACKET_STARTS_WITH}123`
         const handledPackets = []
 
         const runChecks = () => {
@@ -130,7 +130,7 @@ describe('SocketPacket', () => {
 
       it('via emit event', () => {
         const message = 'abc'
-        const data = `${socketPacket.createPacket(message)}${SocketPacket.PACKET_STARTS_WITH}123`
+        const data = `${socketPacket.package(message)}${SocketPacket.PACKET_STARTS_WITH}123`
         const handledPackets = []
 
         const runChecks = () => {
@@ -149,7 +149,7 @@ describe('SocketPacket', () => {
       it('invoking onData', () => {
         const messageA = 'abc'
         const messageB = '123'
-        const data = `${socketPacket.createPacket(messageA)}${socketPacket.createPacket(messageB)}`
+        const data = `${socketPacket.package(messageA)}${socketPacket.package(messageB)}`
         const handledPackets = []
 
         const runChecks = () => {
@@ -169,7 +169,7 @@ describe('SocketPacket', () => {
       it('via emit event', () => {
         const messageA = 'abc'
         const messageB = '123'
-        const data = `${socketPacket.createPacket(messageA)}${socketPacket.createPacket(messageB)}`
+        const data = `${socketPacket.package(messageA)}${socketPacket.package(messageB)}`
         const handledPackets = []
 
         const runChecks = () => {
@@ -268,13 +268,13 @@ describe('SocketPacket', () => {
     })
   })
 
-  describe('#createPacket', () => {
+  describe('#package', () => {
     const datas = [undefined, null, '', 'hello world', 'This is some FUNNY business YO@@!']
 
     datas.forEach(data => {
       it(`should return the created packet with defaults when using the default constructor (${data})`, () => {
         const expected = `${SocketPacket.PACKET_STARTS_WITH}${data || ''}${SocketPacket.PACKET_ENDS_WITH}`
-        const result = socketPacket.createPacket(data)
+        const result = socketPacket.package(data)
 
         assert.equal(result, expected)
       })
@@ -287,27 +287,27 @@ describe('SocketPacket', () => {
       socketPacket = SocketPacket.bind(socket, null, opts)
 
       let data // = undefined
-      let packet = socketPacket.createPacket(data)
+      let packet = socketPacket.package(data)
       let expected = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = null
-      packet = socketPacket.createPacket(data)
+      packet = socketPacket.package(data)
       expected = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = ''
-      packet = socketPacket.createPacket(data)
+      packet = socketPacket.package(data)
       expected = `${SocketPacket.PACKET_STARTS_WITH}${data}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = { hello: 'world' }
-      packet = socketPacket.createPacket(data)
+      packet = socketPacket.package(data)
       expected = `${SocketPacket.PACKET_STARTS_WITH}{"hello":"world"}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
 
       data = { hello: 'world', boy: { male: true, adult: false, name: 'Tony' } }
-      packet = socketPacket.createPacket(data)
+      packet = socketPacket.package(data)
       expected = `${SocketPacket.PACKET_STARTS_WITH}{"hello":"world","boy":{"male":true,"adult":false,"name":"Tony"}}${SocketPacket.PACKET_ENDS_WITH}`
       assert.equal(packet, expected)
     })
