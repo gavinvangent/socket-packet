@@ -1,6 +1,6 @@
 {
   "name": "socket-packet",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
@@ -26,8 +26,7 @@
     "url": "https://github.com/gavinvangent/socket-packet/issues"
   },
   "homepage": "https://github.com/gavinvangent/socket-packet#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "assert": "^1.4.1",
     "babel-cli": "^6.23.0",
