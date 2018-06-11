@@ -8,7 +8,8 @@
     "build": "babel src -d lib",
     "prepublishOnly": "npm run test-with-coverage && npm run build",
     "test": "NODE_ENV=test nyc mocha ./test/",
-    "test-with-coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet"
+    "test-with-coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet",
+    "tc": "npm run test-with-coverage"
   },
   "repository": {
     "type": "git",
