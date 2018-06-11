@@ -49,10 +49,6 @@ class SocketPacket {
     }
 
     socketBuf.buffer += data
-    if (!socketBuf.buffer) {
-      // empty buffer
-      return
-    }
 
     let idx = 0
     const packets = []
