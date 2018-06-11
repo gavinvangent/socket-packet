@@ -41,7 +41,7 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
   - startsWith: {optional} \<string\> - see [startsWith](#startswith)
   - endsWith: {optional} \<string\> - see [endsWith](#endswith)
   - encoding: {optional} \<string\> - see [encoding](#encoding)
-  - packetStrigifier: {optional} \<function\> - see [packetStringifier](#packetstringifier)
+  - packetStringifier: {optional} \<function\> - see [packetStringifier](#packetstringifier)
   - packetParser: {optional} \<function\> - see [packetParser](#packetparser)
 
 ```js
