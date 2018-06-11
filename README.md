@@ -1,5 +1,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gavinvangent/socket-packet&amp;utm_campaign=Badge_Grade)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&utm_medium=referral&utm_content=gavinvangent/socket-packet&utm_campaign=Badge_Coverage)
+
 # socket-packet
 A nodejs library to wrap TCP/UDP packets between a server and client
 
@@ -122,4 +124,13 @@ if, for example, all packets are expected to be `application/json`, you can use 
 opts = {
   packetParser: packet => packet && JSON.parse(packet)
 }
+```
+
+## Dev setup
+
+You will need to get/generate your Codacy account api token (not project token) and your username ready for this:
+
+```sh
+export CODACY_USERNAME="your name here"
+export CODACY_API_TOKEN="your token here"
 ```

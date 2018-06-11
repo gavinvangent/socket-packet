@@ -6,9 +6,9 @@
   "scripts": {
     "pretest": "./node_modules/.bin/eslint ./src",
     "build": "babel src -d lib",
-    "prepublishOnly": "npm run test && npm run build",
-    "test": "NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken iv8aBmLMXQpCpB7TKtTX --username gavinvangent --projectName socket-packet",
-    "test-with-coverage": "npm test"
+    "prepublishOnly": "npm run test-with-coverage && npm run build",
+    "test": "NODE_ENV=test nyc mocha ./test/",
+    "test-with-coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet"
   },
   "repository": {
     "type": "git",
