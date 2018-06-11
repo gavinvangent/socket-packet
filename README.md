@@ -38,11 +38,11 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
 - socket: \<Object\> instance of a [net.Socket](https://nodejs.org/docs/latest/api/net.html#net_class_net_socket)
 - logger: {optional} \<Object\> instance of a [winston](https://www.npmjs.com/package/winston) or similar logger
 - opts: {optional} \<Object\> with any customized options for SocketPacket
-  - startsWith: {optional} \<string\> - see [startsWith](#startsWith)
-  - endsWith: {optional} \<string\> - see [endsWith](#endsWith)
+  - startsWith: {optional} \<string\> - see [startsWith](#startswith)
+  - endsWith: {optional} \<string\> - see [endsWith](#endswith)
   - encoding: {optional} \<string\> - see [encoding](#encoding)
-  - packetStrigifier: {optional} \<function\> - see [packetStringifier](#packetStringifier)
-  - packetParser: {optional} \<function\> - see [packetParser](#packetParser)
+  - packetStrigifier: {optional} \<function\> - see [packetStringifier](#packetstringifier)
+  - packetParser: {optional} \<function\> - see [packetParser](#packetparser)
 
 ```js
 SocketPacket.bind(socket, logger, opts)
@@ -72,7 +72,7 @@ socket.send('ping')
 socket.send({ hello: 'world'})
 ```
 
-**NB:** although you are sending a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetParser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetStringifier) to safely get a stringified version of the JSON object to write to the socket
+**NB:** although you are sending a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetparser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetstringifier) to safely get a stringified version of the JSON object to write to the socket
 
 ## Options
 
@@ -89,13 +89,13 @@ This library is all about packaging messages/data being transferred over a socke
 The encoding to use when parsing/stringifying packets, default is'utf8'
 Caveat: if you use [socket.setEncoding()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_setencoding_encoding) and it does not match this encoding, problems may be expeienced ... I have not yet tested this
 
-### packetStrigifier
+### packetStringifier
 
 This function is used when socket.send(data[, cb]) is invoked to stringify the message/data object before writing to the socket ... The default returns the packet as is, as a string:
 
 ```js
 opts = {
-  packetStrigifier: packet => packet && packet.toString()
+  packetStringifier: packet => packet && packet.toString()
 }
 ```
 
@@ -103,7 +103,7 @@ if, for example, all packets are expected to be `application/json`, you can use 
 
 ```js
 opts = {
-  packetStrigifier: packet => packet && JSON.stringify(packet)
+  packetStringifier: packet => packet && JSON.stringify(packet)
 }
 ```
 
