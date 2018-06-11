@@ -1,5 +1,4 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gavinvangent/socket-packet&amp;utm_campaign=Badge_Grade)
-
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&utm_medium=referral&utm_content=gavinvangent/socket-packet&utm_campaign=Badge_Coverage)
 
 # socket-packet
