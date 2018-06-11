@@ -77,14 +77,35 @@ describe('SocketPacket', () => {
       })
     })
 
+    describe('should emit once and log an error when packet is found within an invalid packet start', () => {
+      const data = `123${SocketPacket.PACKET_STARTS_WITH}abc${SocketPacket.PACKET_ENDS_WITH}`
+
+      it('invoking onData', done => {
+        socket.on('packet', packet => {
+          assert.equal(packet, 'abc')
+          done()
+        })
+        socketPacket.onData(data)
+      })
+
+      it('via emit event', done => {
+        socket.on('packet', packet => {
+          assert.equal(packet, 'abc')
+          done()
+        })
+        socket.emit('data', data)
+      })
+    })
+
     describe('should emit once for a single packet in a whole data object', () => {
-      it('invoking onData', () => {
+      it('invoking onData', done => {
         const message = 'abc'
         const data = socketPacket.package(message)
         const handledPackets = []
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [message])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -94,13 +115,14 @@ describe('SocketPacket', () => {
         socketPacket.onData(data)
       })
 
-      it('via emit event', () => {
+      it('via emit event', done => {
         const message = 'abc'
         const data = socketPacket.package(message)
         const handledPackets = []
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [message])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -112,13 +134,14 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a single packet in a data object that has one item and the start of another but no end', () => {
-      it('invoking onData', () => {
+      it('invoking onData', done => {
         const message = 'abc'
         const data = `${socketPacket.package(message)}${SocketPacket.PACKET_STARTS_WITH}123`
         const handledPackets = []
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [message])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -128,13 +151,14 @@ describe('SocketPacket', () => {
         socketPacket.onData(data)
       })
 
-      it('via emit event', () => {
+      it('via emit event', done => {
         const message = 'abc'
         const data = `${socketPacket.package(message)}${SocketPacket.PACKET_STARTS_WITH}123`
         const handledPackets = []
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [message])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -146,7 +170,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit twice for two packets in a single data object', () => {
-      it('invoking onData', () => {
+      it('invoking onData', done => {
         const messageA = 'abc'
         const messageB = '123'
         const data = `${socketPacket.package(messageA)}${socketPacket.package(messageB)}`
@@ -154,6 +178,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [messageA, messageB])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -166,7 +191,7 @@ describe('SocketPacket', () => {
         socketPacket.onData(data)
       })
 
-      it('via emit event', () => {
+      it('via emit event', done => {
         const messageA = 'abc'
         const messageB = '123'
         const data = `${socketPacket.package(messageA)}${socketPacket.package(messageB)}`
@@ -174,6 +199,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, [messageA, messageB])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -188,7 +214,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a packet that is split amoungst 2 data objects', () => {
-      it('invoking onData', () => {
+      it('invoking onData', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc${SocketPacket.PACKET_ENDS_WITH}`
 
@@ -196,6 +222,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, ['123abc'])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -206,7 +233,7 @@ describe('SocketPacket', () => {
         socketPacket.onData(dataB)
       })
 
-      it('via emit event', () => {
+      it('via emit event', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc${SocketPacket.PACKET_ENDS_WITH}`
 
@@ -214,6 +241,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, ['123abc'])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -226,7 +254,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a packet that is split amoungst 3 data objects', () => {
-      it('invoking onData', () => {
+      it('invoking onData', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc`
         const dataC = `!@#$${SocketPacket.PACKET_ENDS_WITH}`
@@ -235,6 +263,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, ['123abc!@#$'])
+          done()
         }
 
         socket.on('packet', packet => {
@@ -246,7 +275,7 @@ describe('SocketPacket', () => {
         socketPacket.onData(dataC)
       })
 
-      it('via emit event', () => {
+      it('via emit event', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc`
         const dataC = `!@#$${SocketPacket.PACKET_ENDS_WITH}`
@@ -255,6 +284,7 @@ describe('SocketPacket', () => {
 
         const runChecks = () => {
           assert.deepEqual(handledPackets, ['123abc!@#$'])
+          done()
         }
 
         socket.on('packet', packet => {
