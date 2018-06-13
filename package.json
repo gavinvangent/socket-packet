@@ -68,5 +68,11 @@
   },
   "pre-commit": [
     "tc"
-  ]
+  ],
+  "standard": {
+    "env": [
+      "mocha"
+    ],
+    "parser": "babel-eslint"
+  }
 }
