@@ -4,7 +4,7 @@
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
-    "pretest": "standard | snazzy && ./node_modules/.bin/eslint ./src",
+    "pretest": "./node_modules/.bin/standard | ./node_modules/.bin/snazzy && ./node_modules/.bin/eslint ./src",
     "build": "babel src -d lib",
     "prepublishOnly": "npm run test && npm run build",
     "test": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/mocha ./test/",
