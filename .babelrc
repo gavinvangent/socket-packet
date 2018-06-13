@@ -11,6 +11,7 @@
     "stage-0"
   ],
   "plugins": [
+    "istanbul",
     "transform-runtime",
     "transform-object-rest-spread",
     "transform-decorators-legacy",

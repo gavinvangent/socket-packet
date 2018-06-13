@@ -4,11 +4,11 @@
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
-    "pretest": "./node_modules/.bin/eslint ./src",
+    "pretest": "standard | snazzy &&./node_modules/.bin/eslint ./src",
     "build": "babel src -d lib",
-    "prepublishOnly": "npm run test-with-coverage && npm run build",
+    "prepublishOnly": "npm run tc",
     "test": "NODE_ENV=test nyc mocha ./test/",
-    "test-with-coverage": "NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet",
+    "test-with-coverage": "npm build && NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet",
     "tc": "npm run test-with-coverage"
   },
   "repository": {
@@ -34,26 +34,29 @@
     "babel-core": "^6.23.1",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.2",
-    "babel-plugin-transform-builtin-extend": "1.1.2",
-    "babel-plugin-transform-decorators-legacy": "1.3.4",
+    "babel-plugin-istanbul": "^4.1.6",
+    "babel-plugin-transform-builtin-extend": "^1.1.2",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-polyfill": "^6.23.0",
     "babel-preset-env": "^1.6.0",
-    "babel-preset-stage-0": "6.24.1",
-    "babel-register": "6.26.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-register": "^6.26.0",
     "codacy-coverage": "^3.0.0",
     "eslint": "^4.19.1",
     "mocha": "^5.2.0",
     "nyc": "^12.0.2",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.1"
   },
   "nyc": {
     "require": [
       "babel-register"
     ],
     "sourceMap": false,
-    "instrument": true,
+    "instrument": false,
     "include": [
       "src/**/*.js"
     ]
