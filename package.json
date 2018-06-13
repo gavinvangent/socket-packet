@@ -4,11 +4,11 @@
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
-    "pretest": "standard | snazzy &&./node_modules/.bin/eslint ./src",
+    "pretest": "standard | snazzy && ./node_modules/.bin/eslint ./src",
     "build": "babel src -d lib",
     "prepublishOnly": "npm run tc",
-    "test": "NODE_ENV=test nyc mocha ./test/",
-    "test-with-coverage": "npm run build && NODE_ENV=test nyc --reporter=lcov --reporter=text-lcov mocha ./test/ | codacy-coverage --accountToken $CODACY_API_TOKEN --username $CODACY_USERNAME --projectName socket-packet",
+    "test": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/mocha ./test/",
+    "test-with-coverage": "npm run build && NODE_ENV=test ./node_modules/.bin/nyc --reporter=lcov --reporter=text-lcov ./node_modules/.bin/mocha ./test/ | ./node_modules/.bin/codacy-coverage --accountToken=$CODACY_API_TOKEN --username=$CODACY_USERNAME --projectName=socket-packet",
     "tc": "npm run test-with-coverage"
   },
   "repository": {
@@ -56,12 +56,12 @@
       "babel-register"
     ],
     "sourceMap": false,
-    "instrument": false,
+    "instrument": true,
     "include": [
       "src/**/*.js"
     ]
   },
   "pre-commit": [
-    "test-with-coverage"
+    "test"
   ]
 }
