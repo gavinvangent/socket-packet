@@ -65,14 +65,5 @@
   },
   "pre-commit": [
     "tc"
-  ],
-  "bin": {
-    "babel-register": "./node_modules/.bin/babel-register",
-    "codacy-coverage": "./node_modules/.bin/codacy-coverage",
-    "eslint": "./node_modules/.bin/eslint",
-    "mocha": "./node_modules/.bin/mocha",
-    "nyc": "./node_modules/.bin/nyc",
-    "snazzy": "./node_modules/.bin/snazzy",
-    "standard": "./node_modules/.bin/standard"
-  }
+  ]
 }
