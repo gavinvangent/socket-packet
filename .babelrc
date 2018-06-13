@@ -1,15 +1,18 @@
 {
   "presets": [
-    [
-      "env",
-      {
-        "targets": {
-          "node": "8.11.2"
-        }
-      }
-    ],
+    "env",
     "stage-0"
   ],
+  "env": {
+    "targets": {
+      "node": "8.11.2"
+    },
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  },
   "plugins": [
     "transform-runtime",
     "transform-object-rest-spread",
