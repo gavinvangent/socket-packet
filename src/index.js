@@ -1,8 +1,5 @@
 class SocketPacket {
   constructor (socket, logger, opts = {}) {
-    socket._packetBuffers = {}
-    socket._idSeed = 1
-
     socket.on('data', data => this.onData(data))
     socket.send = (data, cb) => socket.write(this.package(data), cb)
 
@@ -18,53 +15,36 @@ class SocketPacket {
     this._endsWith = opts.endsWith || SocketPacket.PACKET_ENDS_WITH
     this._endLen = this._endsWith.length
 
+    this._buffer = ''
     this._encoding = opts.encoding || 'utf8'
   }
 
   onData (data) {
-    if (!this._socket._bufferId) {
-      this._socket._bufferId = this._socket._idSeed++
-      this._socket._packetBuffers[this._socket._bufferId] = {
-        buffer: ''
-      }
-    }
+    this._buffer += data.toString(this._encoding)
 
-    const bufferId = this._socket._bufferId
-    const socketBuf = this.getBufferById(bufferId)
-    data = data.toString(this._encoding)
-
-    if (socketBuf.buffer.length === 0 && data.substr(0, this._startLen) !== this._startsWith) {
-      // ignore packet because not starting properly and there are no previous parts available
-
-      this.log('error', 'Invalid inbound data')
-
-      const i = data.indexOf(this._startsWith)
-      if (i < 0) {
-        // no other packet data
-        return
-      }
-
-      this.log('warn', 'Valid packet found within invalid inbound data')
-      data = data.substr(i)
-    }
-
-    socketBuf.buffer += data
-
-    let idx = 0
+    let idx
     const packets = []
 
-    while ((idx = socketBuf.buffer.indexOf(this._endsWith)) !== -1) {
-      packets.push(socketBuf.buffer.substr(0, idx + this._endLen))
-      socketBuf.buffer = socketBuf.buffer.substr(idx + this._endLen)
-    }
+    while ((idx = this._buffer.indexOf(this._endsWith)) !== -1) {
+      let end = idx + this._endLen
 
-    if (!packets.length) {
-      // no full packets found
-      return
+      const startIdx = this._buffer.indexOf(this._startsWith)
+      if (startIdx !== 0 && startIdx < idx) {
+        end = startIdx
+      }
+
+      const packet = this._buffer.substr(0, end)
+      this._buffer = this._buffer.substr(end)
+      packets.push(packet)
     }
 
     packets.forEach(packet => {
-      let strippedPacket = packet.replace(this._startsWith, '').replace(this._endsWith, '')
+      if (packet.indexOf(this._startsWith) !== 0 || packet.indexOf(this._endsWith) !== packet.length - this._endLen) {
+        this._socket.emit('error', `Malformed packet received: ${packet}`)
+        return
+      }
+
+      const strippedPacket = packet.substring(this._startLen, packet.length - this._endLen)
       if (!strippedPacket) {
         return
       }
@@ -76,7 +56,7 @@ class SocketPacket {
         this._socket.emit('packet', parsedPacket)
       } catch (err) {
         this.log('error', `Packet parse failed!: ${strippedPacket}`)
-        this._socket.emit('error', new Error('Parsing of inbound packet errored', err))
+        this._socket.emit('error', `Parsing of inbound packet errored: ${err.message}`)
       }
     })
   }
@@ -87,10 +67,6 @@ class SocketPacket {
 
   parsePacket (packet) {
     return this._packetParser(packet)
-  }
-
-  getBufferById (bufferId) {
-    return this._socket._packetBuffers[bufferId]
   }
 
   log () {

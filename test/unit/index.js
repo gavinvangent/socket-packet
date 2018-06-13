@@ -3,7 +3,7 @@ import assert from 'assert'
 import { Socket } from 'net'
 import SocketPacket from '../../src/index'
 
-describe('SocketPacket', () => {
+describe.only('SocketPacket', () => {
   let socket
   let socketPacket
 
@@ -24,18 +24,18 @@ describe('SocketPacket', () => {
 
       socketPacket = SocketPacket.bind(socket)
 
-      assert.deepEqual(socket._packetBuffers, {})
-      assert.strictEqual(socket._idSeed, 1)
-
       assert.equal(typeof socket.send, 'function')
       assert.strictEqual(socket.listeners('data').length, 1)
 
       assert.strictEqual(socket, socketPacket._socket)
       assert.strictEqual(socketPacket._logger, undefined)
+      assert.deepEqual(socketPacket._buffer, '')
       assert.equal(typeof socketPacket._packetStringifier, 'function')
       assert.equal(typeof socketPacket._packetParser, 'function')
       assert.equal(socketPacket._startsWith, SocketPacket.PACKET_STARTS_WITH)
+      assert.equal(socketPacket._startLen, SocketPacket.PACKET_STARTS_WITH.length)
       assert.equal(socketPacket._endsWith, SocketPacket.PACKET_ENDS_WITH)
+      assert.equal(socketPacket._endLen, SocketPacket.PACKET_ENDS_WITH.length)
       assert.equal(socketPacket._encoding, 'utf8')
     })
   })
@@ -77,21 +77,33 @@ describe('SocketPacket', () => {
       })
     })
 
-    describe('should emit once and log an error when packet is found within an invalid packet start', () => {
+    describe('should emit once and emit an error when packet is found within an invalid packet start', () => {
       const data = `123${SocketPacket.PACKET_STARTS_WITH}abc${SocketPacket.PACKET_ENDS_WITH}`
 
       it('invoking onData', done => {
+        let errorHandled = false
         socket.on('packet', packet => {
           assert.equal(packet, 'abc')
+          assert(errorHandled)
           done()
+        })
+        socket.on('error', err => {
+          assert.equal(err, 'Malformed packet received: 123')
+          errorHandled = true
         })
         socketPacket.onData(data)
       })
 
       it('via emit event', done => {
+        let errorHandled = false
         socket.on('packet', packet => {
           assert.equal(packet, 'abc')
+          assert(errorHandled)
           done()
+        })
+        socket.on('error', err => {
+          errorHandled = true
+          assert.equal(err, 'Malformed packet received: 123')
         })
         socket.emit('data', data)
       })
@@ -387,30 +399,6 @@ describe('SocketPacket', () => {
 
       parsedPacket = socketPacket.parsePacket(packet)
       assert.deepEqual(expected, parsedPacket)
-    })
-  })
-
-  describe('#getBufferById', () => {
-    beforeEach(() => {
-      socketPacket._socket._packetBuffers[1] = 'abc'
-      socketPacket._socket._packetBuffers[2] = 'abc-@!!@-123'
-      socketPacket._socket._packetBuffers[5] = 'hello world'
-    })
-
-    it('should return undefined when bufferId doesn\'t exist', () => {
-      const result = socketPacket.getBufferById(3)
-      assert.strictEqual(result, undefined)
-    })
-
-    it('should resturn the value when matched', () => {
-      let result = socketPacket.getBufferById(1)
-      assert.equal(result, 'abc')
-
-      result = socketPacket.getBufferById(2)
-      assert.equal(result, 'abc-@!!@-123')
-
-      result = socketPacket.getBufferById(5)
-      assert.equal(result, 'hello world')
     })
   })
 
