@@ -1,6 +1,10 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gavinvangent/socket-packet&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/4c76e317f6ed40d4af6f255b62e590fa)](https://www.codacy.com/app/gavinvangent/socket-packet?utm_source=github.com&utm_medium=referral&utm_content=gavinvangent/socket-packet&utm_campaign=Badge_Coverage)
+[![GitHub issues](https://img.shields.io/github/issues/gavinvangent/socket-packet.svg)](https://github.com/gavinvangent/socket-packet/issues)
+[![GitHub stars](https://img.shields.io/github/stars/gavinvangent/socket-packet.svg)](https://github.com/gavinvangent/socket-packet/stargazers)
+[![npm](https://img.shields.io/npm/dw/localeval.svg)](https://www.npmjs.com/package/socket-packet)
+
 
 # socket-packet
 A nodejs library to wrap TCP/UDP packets between a server and client
