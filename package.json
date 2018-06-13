@@ -54,7 +54,7 @@
     "require": [
       "babel-register"
     ],
-    "sourceMap": true,
+    "sourceMap": false,
     "instrument": true,
     "include": [
       "src/**/*.js"
