@@ -63,7 +63,14 @@
     "instrument": true,
     "include": [
       "src/**/*.js"
-    ]
+    ],
+    "cache": true,
+    "watermarks": {
+      "lines": [95, 100],
+      "functions": [95, 100],
+      "branches": [95, 100],
+      "statements": [95, 100]
+    }
   },
   "pre-commit": [
     "tc"
