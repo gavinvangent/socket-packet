@@ -4,7 +4,7 @@
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "babel ./src -d ./lib",
+    "build": "./node_modules/.bin/babel ./src -d ./lib",
     "coverage": "nyc --reporter-html --reporter=text --reporter=text-lcov --reporter=lcov npm test | codacy-coverage --accountToken=$CODACY_API_TOKEN --username=$CODACY_USERNAME --projectName=socket-packet",
     "prepublishOnly": "npm run tc && npm run build",
     "pretest": "standard | snazzy && eslint ./src",
