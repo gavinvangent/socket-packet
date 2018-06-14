@@ -1,6 +1,6 @@
 {
   "name": "socket-packet",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "A nodejs library to wrap TCP/UDP packets between a server and client",
   "main": "./lib/index.js",
   "files": [
@@ -66,10 +66,22 @@
     ],
     "cache": true,
     "watermarks": {
-      "lines": [95, 100],
-      "functions": [95, 100],
-      "branches": [95, 100],
-      "statements": [95, 100]
+      "lines": [
+        95,
+        100
+      ],
+      "functions": [
+        95,
+        100
+      ],
+      "branches": [
+        95,
+        100
+      ],
+      "statements": [
+        95,
+        100
+      ]
     }
   },
   "pre-commit": [
