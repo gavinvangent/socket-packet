@@ -65,6 +65,18 @@ socket.on('packet', packet => {
 })
 ```
 
+## Event: 'error'
+
+`socket-packet` emits `error` when encountering errors related to un/packaging messages, examples:
+- on receiving a message which doesnt conform to the expected start and end wrapping
+- on error from invocation of [packetStringifier](#packetstringifier) and [packetParser](#packetparser)
+
+```js
+socket.on('error', error => {
+  // handle error
+})
+```
+
 ## .send(data[, callback])
 
 `socket-packet` binds a `.send` function to the socket. Using this method will package the provided data/message and the write it to the socket
@@ -92,7 +104,7 @@ This library is all about packaging messages/data being transferred over a socke
 ### encoding
 
 The encoding to use when parsing/stringifying packets, default is'utf8'
-Caveat: if you use [socket.setEncoding()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_setencoding_encoding) and it does not match this encoding, problems may be expeienced ... I have not yet tested this
+Caveat: if you use [socket.setEncoding()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_setencoding_encoding) and it does not match this encoding, problems may be experienced ... I have not yet tested this
 
 ### packetStringifier
 
