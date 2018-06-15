@@ -204,7 +204,7 @@ const net = require('net')
 const SocketPacket = require('socket-packet')
 
 const port = process.env.PORT || 8080
-const host = process.env.HOST || '0.0.0.0'
+const host = process.env.HOST || 'localhost'
 
 const client = net.createConnection({ port, host }, () => {
   console.log('connection established')
