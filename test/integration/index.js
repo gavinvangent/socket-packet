@@ -202,7 +202,8 @@ describe('SocketPacket', () => {
           client.end()
           server.close()
 
-          assert.equal(err, 'Parsing of inbound packet errored: Unexpected token p in JSON at position 0')
+          assert(err instanceof Error, 'Expected err to be an instance of an error, but wasn\'t')
+          assert.equal(err.message, 'Parsing of inbound packet errored: Unexpected token p in JSON at position 0')
 
           done()
         })

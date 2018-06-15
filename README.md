@@ -142,6 +142,101 @@ opts = {
 }
 ```
 
+## Example
+
+server.js:
+
+```js
+import net from 'net'
+import SocketPacket from 'socket-packet'
+/* OR */
+const net = require('net')
+const SocketPacket = require('socket-packet')
+
+const port = process.env.PORT || 8080
+const host = process.env.HOST || 'localhost'
+
+const server = net.createServer(socket => {
+  console.log('Client connected')
+  SocketPacket.bind(socket)
+
+  socket.on('packet', packet => {
+    switch (packet) {
+      case 'ping': 
+        console.log('ping received')
+
+        setTimeout(() => {
+          socket.send('pong', () => {
+            console.log('pong sent')
+          })
+        }, 500)
+        break
+      default:
+        console.log('Unhandled packet received: ', packet)    
+    }
+  })
+
+  socket.on('error', err => {
+    console.log('Error:', err)
+  })
+
+  socket.on('end', () => {
+    console.log('Client ended')
+  })
+
+  socket.on('close', hadError => {
+    console.log('Client disconnected')
+  })
+})
+
+server.listen(port, host, () => {
+  console.log(`Server started on ${server.address().address}:${server.address().port}`)
+})
+```
+
+client.js:
+
+```js
+import net from 'net'
+import SocketPacket from 'socket-packet'
+/* OR */
+const net = require('net')
+const SocketPacket = require('socket-packet')
+
+const port = process.env.PORT || 8080
+const host = process.env.HOST || 'localhost'
+
+const client = net.createConnection({ port, host }, () => {
+  console.log('connection established')
+  SocketPacket.bind(client)
+})
+
+client.on('packet', packet => {
+  switch (packet) {
+    case 'pong':
+      console.log('pong received')
+      break
+    default:
+      console.log('Unhandled packet received: ', packet)
+  }
+})
+
+client.on('close', hasError => {
+  console.log(`Connection closed with error = ${!!hasError}`)
+  clearInterval(interval)
+})
+
+client.on('error', err => {
+  console.log(err)
+})
+
+const interval = setInterval(() => {
+  client.send('ping', () => {
+    console.log('ping sent')
+  })
+}, 2000)
+```
+
 ## Dev setup
 
 You will need to get/generate your Codacy account api token (not project token) and your username ready for this:

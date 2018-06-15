@@ -88,7 +88,8 @@ describe.only('SocketPacket', () => {
           done()
         })
         socket.on('error', err => {
-          assert.equal(err, 'Malformed packet received: 123')
+          assert(err instanceof Error, 'Expected err to be an instance of an error, but wasn\'t')
+          assert.equal(err.message, 'Malformed packet received: 123')
           errorHandled = true
         })
         socketPacket.onData(data)
@@ -103,7 +104,8 @@ describe.only('SocketPacket', () => {
         })
         socket.on('error', err => {
           errorHandled = true
-          assert.equal(err, 'Malformed packet received: 123')
+          assert(err instanceof Error, 'Expected err to be an instance of an error, but wasn\'t')
+          assert.equal(err.message, 'Malformed packet received: 123')
         })
         socket.emit('data', data)
       })
