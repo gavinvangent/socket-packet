@@ -147,6 +147,9 @@ opts = {
 server.js:
 
 ```js
+import net from 'net'
+import SocketPacket from 'socket-packet'
+/* OR */
 const net = require('net')
 const SocketPacket = require('socket-packet')
 
@@ -194,6 +197,9 @@ server.listen(port, host, () => {
 client.js:
 
 ```js
+import net from 'net'
+import SocketPacket from 'socket-packet'
+/* OR */
 const net = require('net')
 const SocketPacket = require('socket-packet')
 
