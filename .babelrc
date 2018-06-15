@@ -17,6 +17,7 @@
     "transform-runtime",
     "transform-object-rest-spread",
     "transform-decorators-legacy",
+    "add-module-exports",
     [
       "babel-plugin-transform-builtin-extend",
       {

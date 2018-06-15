@@ -40,7 +40,7 @@ class SocketPacket {
 
     packets.forEach(packet => {
       if (packet.indexOf(this._startsWith) !== 0 || packet.indexOf(this._endsWith) !== packet.length - this._endLen) {
-        this._socket.emit('error', `Malformed packet received: ${packet}`)
+        this._socket.emit('error', new Error(`Malformed packet received: ${packet}`))
         return
       }
 
@@ -56,7 +56,7 @@ class SocketPacket {
         this._socket.emit('packet', parsedPacket)
       } catch (err) {
         this.log('error', `Packet parse failed!: ${strippedPacket}`)
-        this._socket.emit('error', `Parsing of inbound packet errored: ${err.message}`)
+        this._socket.emit('error', new Error(`Parsing of inbound packet errored: ${err.message}`))
       }
     })
   }
