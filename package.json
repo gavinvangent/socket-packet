@@ -86,7 +86,7 @@
     }
   },
   "pre-commit": [
-    "tc"
+    "report"
   ],
   "standard": {
     "env": [
