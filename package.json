@@ -32,7 +32,9 @@
     "url": "https://github.com/gavinvangent/socket-packet/issues"
   },
   "homepage": "https://github.com/gavinvangent/socket-packet#readme",
-  "dependencies": {},
+  "dependencies": {
+    "babel-runtime": "^6.26.0"
+  },
   "devDependencies": {
     "assert": "^1.4.1",
     "babel-cli": "^6.26.0",
