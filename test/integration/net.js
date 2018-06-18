@@ -7,7 +7,7 @@ import SocketPacket from '../../src/index'
 const host = 'localhost'
 const port = 47171
 
-describe('SocketPacket', () => {
+describe('TCP/Net usage', () => {
   describe('server and client with default settings', () => {
     it('should be able to interface successfully', done => {
       let client
@@ -21,13 +21,13 @@ describe('SocketPacket', () => {
           done()
         })
 
-        socket.on('error', error => {
+        socket.on('error', err => {
           client.end()
           server.close()
-          done(error)
+          done(err)
         })
 
-        socket.send('ping')
+        socket.dispatch('ping')
       })
 
       server.listen(port, host, () => {
@@ -36,13 +36,13 @@ describe('SocketPacket', () => {
 
           client.on('packet', packet => {
             assert.equal(packet, 'ping')
-            client.send('pong')
+            client.dispatch('pong')
           })
 
-          client.on('error', error => {
+          client.on('error', err => {
             client.end()
             server.close()
-            done(error)
+            done(err)
           })
         })
       })
@@ -66,10 +66,10 @@ describe('SocketPacket', () => {
           done()
         })
 
-        socket.on('error', error => {
+        socket.on('error', err => {
           client.end()
           server.close()
-          done(error)
+          done(err)
         })
 
         let message = ''
@@ -77,18 +77,18 @@ describe('SocketPacket', () => {
           message += 'BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_'
         }
 
-        socket.send(message)
+        socket.dispatch(message)
       })
 
       server.listen(port, host, () => {
         client = net.createConnection({ host, port }, () => {
           SocketPacket.bind(client)
 
-          client.on('packet', client.send)
-          client.on('error', error => {
+          client.on('packet', client.dispatch)
+          client.on('error', err => {
             client.end()
             server.close()
-            done(error)
+            done(err)
           })
         })
       })
@@ -97,7 +97,7 @@ describe('SocketPacket', () => {
     it('should see the client emit an error if the `endsWith` suffix is sent in message, creating what looks like an extra malformed packet', done => {
       const server = net.createServer(socket => {
         SocketPacket.bind(socket)
-        socket.send(`Hello ${SocketPacket.PACKET_ENDS_WITH} World`)
+        socket.dispatch(`Hello ${SocketPacket.PACKET_ENDS_WITH} World`)
       })
 
       server.listen(port, host, () => {
@@ -109,11 +109,11 @@ describe('SocketPacket', () => {
             packetReceiveCount++
           })
 
-          client.on('error', error => {
+          client.on('error', err => {
             client.end()
             server.close()
             assert.strictEqual(packetReceiveCount, 1)
-            assert.equal(error, 'Malformed packet received:  World-@!!@-')
+            assert.equal(err.message, 'Malformed packet received:  World-@!!@-')
             done()
           })
         })
@@ -129,7 +129,7 @@ describe('SocketPacket', () => {
         }
         SocketPacket.bind(socket, null, opts)
 
-        socket.send('ping')
+        socket.dispatch('ping')
       })
 
       server.listen(port, host, () => {
@@ -142,11 +142,11 @@ describe('SocketPacket', () => {
             done(new Error('Received a packet when packet extraction should not be possible'))
           })
 
-          client.on('error', error => {
+          client.on('error', err => {
             client.end()
             server.close()
 
-            assert.equal(error, 'Malformed packet received: !123!ping-@!!@-')
+            assert.equal(err.message, 'Malformed packet received: !123!ping-@!!@-')
 
             done()
           })
@@ -161,7 +161,7 @@ describe('SocketPacket', () => {
         }
         SocketPacket.bind(socket, null, opts)
 
-        socket.send('ping')
+        socket.dispatch('ping')
       })
 
       server.listen(port, host, () => {
@@ -184,7 +184,7 @@ describe('SocketPacket', () => {
       })
     })
 
-    it.only('should see the server error when the client sends invalid json to a json specific parser (packetParser)', done => {
+    it('should see the server error when the client sends invalid json to a json specific parser (packetParser)', done => {
       let client
       const server = net.createServer(socket => {
         const opts = {
@@ -212,7 +212,7 @@ describe('SocketPacket', () => {
       server.listen(port, host, () => {
         client = net.createConnection({ host, port }, () => {
           SocketPacket.bind(client)
-          client.send('ping')
+          client.dispatch('ping')
         })
       })
     })
@@ -231,7 +231,7 @@ describe('SocketPacket', () => {
           done(err)
         })
 
-        socket.send({ hello: 'world' })
+        socket.dispatch({ hello: 'world' })
       })
 
       server.listen(port, host, () => {
@@ -269,7 +269,7 @@ describe('SocketPacket', () => {
           done(err)
         })
 
-        socket.send({ hello: 'world' })
+        socket.dispatch({ hello: 'world' })
       })
 
       server.listen(port, host, () => {
