@@ -4,7 +4,7 @@ import assert from 'assert'
 import dgram from 'dgram'
 import SocketPacket from '../../src/index'
 
-const host = 'localhost'
+const host = '127.0.0.1'
 const serverPort = 7171
 const clientPort = 7272
 
@@ -12,16 +12,22 @@ describe('UDP/Datagram usage', () => {
   describe('server and client with default settings', () => {
     it('should be able to interface successfully', done => {
       const server = dgram.createSocket('udp4')
+      server.unref()
       SocketPacket.bind(server, null, { type: 'udp' })
 
       const client = dgram.createSocket('udp4')
+      client.unref()
       SocketPacket.bind(client, null, { type: 'udp4' })
 
       server.on('packet', (packet, rInfo) => {
         clearTimeout(timeout)
         client.close()
         server.close()
+
+        assert.equal(rInfo.port, clientPort)
+        assert.equal(rInfo.address, host)
         assert.equal(packet, 'pong')
+
         done()
       })
 
@@ -33,13 +39,15 @@ describe('UDP/Datagram usage', () => {
       })
 
       client.on('packet', (packet, rInfo) => {
+        assert.equal(rInfo.port, serverPort)
+        assert.equal(rInfo.address, host)
         assert.equal(packet, 'ping')
         client.dispatch('pong', rInfo.port, rInfo.address)
       })
 
       client.on('error', error => {
         clearTimeout(timeout)
-        client.end()
+        client.close()
         server.close()
         done(error)
       })
@@ -55,75 +63,83 @@ describe('UDP/Datagram usage', () => {
       }, 500)
     })
 
-    /*
     it('should be able to interface successfully using big data', done => {
-      let client
-      const server = net.createServer(socket => {
-        SocketPacket.bind(socket)
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'dgram' })
 
-        let dataCount = 0
-        socket.on('data', data => {
-          dataCount++
-        })
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'datagram' })
 
-        socket.on('packet', packet => {
-          client.end()
-          server.close()
-          assert.equal(packet, message)
-          assert(dataCount > 1)
-          done()
-        })
-
-        socket.on('error', error => {
-          client.end()
-          server.close()
-          done(error)
-        })
-
-        let message = ''
-        for (let i = 0; i < 3000; i++) {
-          message += 'BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_BIGDATA_'
-        }
-
-        socket.send(message)
+      let messageCount = 0
+      server.on('message', message => {
+        messageCount++
       })
 
-      server.listen(port, host, () => {
-        client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      server.on('packet', (packet, rInfo) => {
+        client.close()
+        server.close()
+        assert.equal(rInfo.port, clientPort)
+        assert.equal(rInfo.address, host)
+        assert.equal(packet, message)
+        assert(messageCount > 1)
+        done()
+      })
 
-          client.on('packet', client.send)
-          client.on('error', error => {
-            client.end()
-            server.close()
-            done(error)
-          })
+      server.on('error', err => {
+        client.close()
+        server.close()
+        done(err)
+      })
+
+      client.on('packet', (packet, rInfo) => {
+        assert.equal(rInfo.port, serverPort)
+        assert.equal(rInfo.address, host)
+        client.dispatch(packet, rInfo.port, rInfo.address)
+      })
+      client.on('error', err => {
+        client.close()
+        server.close()
+        done(err)
+      })
+
+      let message = 'abcdefghijklmnopqrstuvwxyz'
+
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.setSendBufferSize(4)
+          client.setSendBufferSize(4)
+          server.dispatch(message, clientPort, host)
         })
       })
     })
 
     it('should see the client emit an error if the `endsWith` suffix is sent in message, creating what looks like an extra malformed packet', done => {
-      const server = net.createServer(socket => {
-        SocketPacket.bind(socket)
-        socket.send(`Hello ${SocketPacket.PACKET_ENDS_WITH} World`)
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp' })
+
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp' })
+
+      let packetReceiveCount = 0
+      client.on('packet', () => {
+        packetReceiveCount++
       })
 
-      server.listen(port, host, () => {
-        const client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      client.on('error', err => {
+        client.close()
+        server.close()
+        assert.strictEqual(packetReceiveCount, 1)
+        assert.equal(err.message, 'Malformed packet received:  World-@!!@-')
+        done()
+      })
 
-          let packetReceiveCount = 0
-          client.on('packet', () => {
-            packetReceiveCount++
-          })
-
-          client.on('error', error => {
-            client.end()
-            server.close()
-            assert.strictEqual(packetReceiveCount, 1)
-            assert.equal(error, 'Malformed packet received:  World-@!!@-')
-            done()
-          })
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.dispatch(`Hello ${SocketPacket.PACKET_ENDS_WITH} World`, clientPort, host)
         })
       })
     })
@@ -131,175 +147,181 @@ describe('UDP/Datagram usage', () => {
 
   describe('server with custom opts and client with default settings', () => {
     it('should see the client not able to process a packet (startsWith)', done => {
-      const server = net.createServer(socket => {
-        const opts = {
-          startsWith: '!123!'
-        }
-        SocketPacket.bind(socket, null, opts)
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp4', startsWith: '!123!' })
 
-        socket.send('ping')
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp4' })
+
+      client.on('packet', () => {
+        client.close()
+        server.close()
+        done(new Error('Received a packet when packet extraction should not be possible'))
       })
 
-      server.listen(port, host, () => {
-        const client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      client.on('error', err => {
+        client.close()
+        server.close()
 
-          client.on('packet', packet => {
-            client.end()
-            server.close()
-            done(new Error('Received a packet when packet extraction should not be possible'))
-          })
+        assert.equal(err.message, 'Malformed packet received: !123!ping-@!!@-')
 
-          client.on('error', error => {
-            client.end()
-            server.close()
+        done()
+      })
 
-            assert.equal(error, 'Malformed packet received: !123!ping-@!!@-')
-
-            done()
-          })
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.dispatch('ping', clientPort, host)
         })
       })
     })
 
     it('should see the client not able to process a packet (endsWith)', done => {
-      const server = net.createServer(socket => {
-        const opts = {
-          endsWith: '!123!'
-        }
-        SocketPacket.bind(socket, null, opts)
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp4', endsWith: '!123!' })
 
-        socket.send('ping')
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp4' })
+
+      client.on('packet', () => {
+        clearTimeout(timeout)
+        client.close()
+        server.close()
+        done(new Error('Received a packet when packet extraction should not be possible'))
       })
 
-      server.listen(port, host, () => {
-        const client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      const timeout = setTimeout(() => {
+        client.close()
+        server.close()
+        done()
+      }, 150)
 
-          client.on('packet', packet => {
-            clearTimeout(timeout)
-            client.end()
-            server.close()
-            done(new Error('Received a packet when packet extraction should not be possible'))
-          })
-
-          const timeout = setTimeout(() => {
-            client.end()
-            server.close()
-            done()
-          }, 150)
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.dispatch('ping', clientPort, host)
         })
       })
     })
 
-    it.only('should see the server error when the client sends invalid json to a json specific parser (packetParser)', done => {
-      let client
-      const server = net.createServer(socket => {
-        const opts = {
-          packetParser: packet => packet && JSON.parse(packet)
-        }
-        SocketPacket.bind(socket, null, opts)
+    it('should see the server error when the client sends invalid json to a json specific parser (packetParser)', done => {
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp4', packetParser: packet => packet && JSON.parse(packet) })
 
-        socket.on('packet', () => {
-          client.end()
-          server.close()
-          done(new Error('Expected packet parsing to error, should not get here'))
-        })
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp4' })
 
-        socket.on('error', err => {
-          client.end()
-          server.close()
-
-          assert(err instanceof Error, 'Expected err to be an instance of an error, but wasn\'t')
-          assert.equal(err.message, 'Parsing of inbound packet errored: Unexpected token p in JSON at position 0')
-
-          done()
-        })
+      server.on('packet', () => {
+        client.close()
+        server.close()
+        done(new Error('Expected packet parsing to error, should not get here'))
       })
 
-      server.listen(port, host, () => {
-        client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
-          client.send('ping')
+      server.on('error', err => {
+        client.close()
+        server.close()
+
+        assert(err instanceof Error, 'Expected err to be an instance of an error, but wasn\'t')
+        assert.equal(err.message, 'Parsing of inbound packet errored: Unexpected token p in JSON at position 0')
+
+        done()
+      })
+
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          client.dispatch('ping', serverPort, host)
         })
       })
     })
 
     it('should see the client get a json object as a string when server has a custom jsonStringifier (packetStringifier)', done => {
-      let client
-      const server = net.createServer(socket => {
-        const opts = {
-          packetStringifier: packet => packet && JSON.stringify(packet)
-        }
-        SocketPacket.bind(socket, null, opts)
-        socket.on('error', err => {
-          client.end()
-          server.close()
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp4', packetStringifier: packet => packet && JSON.stringify(packet) })
 
-          done(err)
-        })
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp4' })
 
-        socket.send({ hello: 'world' })
+      server.on('packet', () => {
+        client.close()
+        server.close()
+        done(new Error('Expected packet parsing to error, should not get here'))
       })
 
-      server.listen(port, host, () => {
-        client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      server.on('error', err => {
+        client.close()
+        server.close()
 
-          client.on('packet', packet => {
-            client.end()
-            server.close()
+        done(err)
+      })
 
-            assert.equal(packet, '{"hello":"world"}')
-            done()
-          })
+      client.on('packet', packet => {
+        client.close()
+        server.close()
 
-          client.on('error', err => {
-            client.end()
-            server.close()
-            done(err)
-          })
+        assert.equal(packet, '{"hello":"world"}')
+        done()
+      })
+
+      client.on('error', err => {
+        client.close()
+        server.close()
+        done(err)
+      })
+
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.dispatch({ hello: 'world' }, clientPort, host)
         })
       })
     })
 
     it('should see the client get a stringified value of a json packet (packetStringifier)', done => {
-      let client
-      const server = net.createServer(socket => {
-        const opts = {
-          packetStringifier: packet => packet && JSON.stringify(packet)
-        }
-        SocketPacket.bind(socket, null, opts)
-        socket.on('error', err => {
-          client.end()
-          server.close()
+      const server = dgram.createSocket('udp4')
+      server.unref()
+      SocketPacket.bind(server, null, { type: 'udp4', packetStringifier: packet => packet && JSON.stringify(packet) })
 
-          done(err)
-        })
+      const client = dgram.createSocket('udp4')
+      client.unref()
+      SocketPacket.bind(client, null, { type: 'udp4' })
 
-        socket.send({ hello: 'world' })
+      server.on('packet', () => {
+        client.close()
+        server.close()
+        done(new Error('Expected packet parsing to error, should not get here'))
       })
 
-      server.listen(port, host, () => {
-        client = net.createConnection({ host, port }, () => {
-          SocketPacket.bind(client)
+      server.on('error', err => {
+        client.close()
+        server.close()
 
-          client.on('packet', packet => {
-            client.end()
-            server.close()
+        done(err)
+      })
 
-            assert.equal(packet, '{"hello":"world"}')
-            done()
-          })
+      client.on('packet', packet => {
+        client.close()
+        server.close()
 
-          client.on('error', err => {
-            client.end()
-            server.close()
-            done(err)
-          })
+        assert.equal(packet, '{"hello":"world"}')
+        done()
+      })
+
+      client.on('error', err => {
+        client.close()
+        server.close()
+        done(err)
+      })
+
+      server.bind(serverPort, host, () => {
+        client.bind(clientPort, host, () => {
+          server.dispatch({ hello: 'world' }, clientPort, host)
         })
       })
     })
-    */
   })
 })

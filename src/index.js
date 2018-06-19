@@ -28,8 +28,16 @@ class SocketPacket {
       case 'dgram':
       case 'datagram':
         this._socket.on('message', (message, rInfo) => this.onData(message, rInfo))
-        this._socket.dispatch = (message, offset, length, port, address, cb) => {
-          this._socket.send(this.package(message), offset, length, port, address, cb)
+        this._socket.dispatch = (message, port, address, cb) => {
+          const size = this._socket.getSendBufferSize()
+          let packet = this.package(message)
+
+          while (packet.length) {
+            const hasOverflow = packet.length > size
+            const blob = hasOverflow ? packet.substr(0, size) : packet
+            packet = hasOverflow ? packet.substr(size) : ''
+            this._socket.send(blob, port, address, hasOverflow ? undefined : cb)
+          }
         }
         break
       default:
