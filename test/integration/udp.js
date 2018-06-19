@@ -56,7 +56,7 @@ describe('UDP/Datagram usage', () => {
       })
     })
 
-    it('should be able to interface successfully using big data', done => {
+    it.skip('should be able to interface successfully using big data', done => {
       const server = dgram.createSocket('udp4')
       server.unref()
       SocketPacket.bind(server, null, { type: 'dgram' })
