@@ -20,7 +20,6 @@ describe('UDP/Datagram usage', () => {
       SocketPacket.bind(client, null, { type: 'udp4' })
 
       server.on('packet', (packet, rInfo) => {
-        clearTimeout(timeout)
         client.close()
         server.close()
 
@@ -32,7 +31,6 @@ describe('UDP/Datagram usage', () => {
       })
 
       server.on('error', error => {
-        clearTimeout(timeout)
         client.close()
         server.close()
         done(error)
@@ -46,7 +44,6 @@ describe('UDP/Datagram usage', () => {
       })
 
       client.on('error', error => {
-        clearTimeout(timeout)
         client.close()
         server.close()
         done(error)
@@ -57,10 +54,6 @@ describe('UDP/Datagram usage', () => {
           server.dispatch('ping', clientPort, host)
         })
       })
-
-      const timeout = setTimeout(() => {
-        done(new Error('Test did not execute within 500ms'))
-      }, 500)
     })
 
     it('should be able to interface successfully using big data', done => {

@@ -49,7 +49,7 @@ describe('SocketPacket', () => {
           socketPacket = SocketPacket.bind(socket, null, { type: 'fakeType' })
         })
         .then(() => {
-          throw new Error('Expected an error to be thown but wasnt')
+          throw new Error('Expected an error to be thrown but wasnt')
         }, err => {
           assert(err instanceof Error)
           assert.equal(err.message, 'SocketPacket constructed with invalid arguments')
