@@ -29,7 +29,7 @@ class SocketPacket {
       case 'datagram':
         this._socket.on('message', (message, rInfo) => this.onData(message, rInfo))
         this._socket.dispatch = (message, port, address, cb) => {
-          const size = this._socket.getSendBufferSize()
+          const size = this._socket && this._socket.getSendBufferSize ? this._socket.getSendBufferSize() : 512
           let packet = this.package(message)
 
           while (packet.length) {
