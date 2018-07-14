@@ -3,7 +3,7 @@ import assert from 'assert'
 import { Socket } from 'net'
 import SocketPacket from '../../src/index'
 
-describe.only('SocketPacket', () => {
+describe('SocketPacket', () => {
   let socket
   let socketPacket
 
@@ -19,13 +19,15 @@ describe.only('SocketPacket', () => {
   describe('#constructor', () => {
     it('should initialize with defaults', () => {
       socket = new Socket()
-      assert.strictEqual(socket.send, undefined)
+      assert.strictEqual(socket.dispatch, undefined)
       assert.strictEqual(socket.listeners('data').length, 0)
+      assert.strictEqual(socket.listeners('message').length, 0)
 
       socketPacket = SocketPacket.bind(socket)
 
-      assert.equal(typeof socket.send, 'function')
+      assert.equal(typeof socket.dispatch, 'function')
       assert.strictEqual(socket.listeners('data').length, 1)
+      assert.strictEqual(socket.listeners('message').length, 0)
 
       assert.strictEqual(socket, socketPacket._socket)
       assert.strictEqual(socketPacket._logger, undefined)
@@ -37,6 +39,21 @@ describe.only('SocketPacket', () => {
       assert.equal(socketPacket._endsWith, SocketPacket.PACKET_ENDS_WITH)
       assert.equal(socketPacket._endLen, SocketPacket.PACKET_ENDS_WITH.length)
       assert.equal(socketPacket._encoding, 'utf8')
+      assert.equal(socketPacket._type, 'net')
+    })
+
+    it('should throw an error if type is invalid', () => {
+      return Promise.resolve()
+        .then(() => {
+          socket = new Socket()
+          socketPacket = SocketPacket.bind(socket, null, { type: 'fakeType' })
+        })
+        .then(() => {
+          throw new Error('Expected an error to be thrown but wasnt')
+        }, err => {
+          assert(err instanceof Error)
+          assert.equal(err.message, 'SocketPacket constructed with invalid arguments')
+        })
     })
   })
 

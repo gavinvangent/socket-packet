@@ -1,8 +1,5 @@
 class SocketPacket {
   constructor (socket, logger, opts = {}) {
-    socket.on('data', data => this.onData(data))
-    socket.send = (data, cb) => socket.write(this.package(data), cb)
-
     this._socket = socket
     this._logger = logger
 
@@ -17,9 +14,38 @@ class SocketPacket {
 
     this._buffer = ''
     this._encoding = opts.encoding || 'utf8'
+    this._type = (opts.type || 'net').toString()
+
+    switch (this._type.toLowerCase()) {
+      case 'net':
+      case 'tcp':
+        this._socket.on('data', data => this.onData(data))
+        this._socket.dispatch = (data, cb) => socket.write(this.package(data), cb)
+        break
+      case 'udp':
+      case 'udp4':
+      case 'udp6':
+      case 'dgram':
+      case 'datagram':
+        this._socket.on('message', (message, rInfo) => this.onData(message, rInfo))
+        this._socket.dispatch = (message, port, address, cb) => {
+          const size = this._socket.getSendBufferSize()
+          let packet = this.package(message)
+
+          while (packet.length) {
+            const hasOverflow = packet.length > size
+            const blob = hasOverflow ? packet.substr(0, size) : packet
+            packet = hasOverflow ? packet.substr(size) : ''
+            this._socket.send(blob, port, address, hasOverflow ? undefined : cb)
+          }
+        }
+        break
+      default:
+        throw new Error('SocketPacket constructed with invalid arguments')
+    }
   }
 
-  onData (data) {
+  onData (data, rInfo) {
     this._buffer += data.toString(this._encoding)
 
     let idx
@@ -29,7 +55,7 @@ class SocketPacket {
       let end = idx + this._endLen
 
       const startIdx = this._buffer.indexOf(this._startsWith)
-      if (startIdx !== 0 && startIdx < idx) {
+      if (startIdx > 0 && startIdx < idx) {
         end = startIdx
       }
 
@@ -53,7 +79,7 @@ class SocketPacket {
 
       try {
         parsedPacket = this.parsePacket(strippedPacket)
-        this._socket.emit('packet', parsedPacket)
+        this._socket.emit('packet', parsedPacket, rInfo)
       } catch (err) {
         this.log('error', `Packet parse failed!: ${strippedPacket}`)
         this._socket.emit('error', new Error(`Parsing of inbound packet errored: ${err.message}`))
