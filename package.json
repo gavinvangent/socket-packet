@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "babel ./src -d ./lib",
-    "coverage": "nyc --reporter=html --reporter=text --reporter=text-lcov --reporter=lcov npm test | codacy-coverage --accountToken=$CODACY_API_TOKEN --username=$CODACY_USERNAME --projectName=socket-packet",
+    "coverage": "nyc --reporter=html --reporter=text --reporter=text-lcov --reporter=lcov npm test | codacy-coverage --token=$CODACY_PROJECT_TOKEN --projectName=socket-packet",
     "prepublishOnly": "npm run tc && npm run build",
     "pretest": "standard | snazzy && eslint ./src",
     "report": "nyc npm test",
