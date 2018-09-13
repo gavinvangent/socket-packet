@@ -237,12 +237,3 @@ const interval = setInterval(() => {
   })
 }, 2000)
 ```
-
-## Dev setup
-
-You will need to get/generate your Codacy account api token (not project token) and your username ready for this:
-
-```sh
-export CODACY_USERNAME="your name here"
-export CODACY_API_TOKEN="your token here"
-```
