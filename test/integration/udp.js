@@ -57,11 +57,11 @@ describe('UDP/Datagram usage', () => {
     })
 
     it('should be able to interface successfully using big data', done => {
-      const server = dgram.createSocket('udp4')
+      const server = dgram.createSocket({ type: 'udp4', sendBufferSize: 4 })
       server.unref()
       SocketPacket.bind(server, null, { type: 'dgram' })
 
-      const client = dgram.createSocket('udp4')
+      const client = dgram.createSocket({ type: 'udp4', sendBufferSize: 4 })
       client.unref()
       SocketPacket.bind(client, null, { type: 'datagram' })
 
@@ -103,8 +103,8 @@ describe('UDP/Datagram usage', () => {
 
       server.bind(serverPort, host, () => {
         client.bind(clientPort, host, () => {
-          server.setSendBufferSize(4)
-          client.setSendBufferSize(4)
+          // server.setSendBufferSize(4)
+          // client.setSendBufferSize(4)
           server.dispatch(message, clientPort, host)
         })
       })
