@@ -56,7 +56,8 @@ describe('UDP/Datagram usage', () => {
       })
     })
 
-    it.skip('should be able to interface successfully using big data', done => {
+    it('should be able to interface successfully using big data', done => {
+      let ignoreTest = false
       const server = dgram.createSocket('udp4')
       server.unref()
       SocketPacket.bind(server, null, { type: 'dgram' })
@@ -71,13 +72,18 @@ describe('UDP/Datagram usage', () => {
       })
 
       server.on('packet', (packet, rInfo) => {
-        client.close()
-        server.close()
-        assert.equal(rInfo.port, clientPort)
-        assert.equal(rInfo.address, host)
-        assert.equal(packet, message)
-        assert(messageCount > 1)
-        done()
+        setTimeout(() => {
+          client.close()
+          server.close()
+          assert.equal(rInfo.port, clientPort)
+          assert.equal(rInfo.address, host)
+          assert.equal(packet, message)
+
+          if (!ignoreTest) {
+            assert(messageCount > 1)
+          }
+          done()
+        }, 100)
       })
 
       server.on('error', err => {
@@ -101,6 +107,9 @@ describe('UDP/Datagram usage', () => {
 
       server.bind(serverPort, host, () => {
         client.bind(clientPort, host, () => {
+          server.setSendBufferSize = server.setSendBufferSize || (() => { ignoreTest = true })
+          client.setSendBufferSize = client.setSendBufferSize || (() => { ignoreTest = true })
+
           server.setSendBufferSize(4)
           client.setSendBufferSize(4)
           server.dispatch(message, clientPort, host)
