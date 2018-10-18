@@ -323,4 +323,30 @@ describe('UDP/Datagram usage', () => {
       })
     })
   })
+
+  it('should error correctly if sending the packet fails', done => {
+    const errorMessage = 'Some fake error'
+    const server = {
+      on: () => undefined,
+      bind: (port, address, cb) => cb(),
+      setSendBufferSize: () => undefined,
+      send: (message, port, address, cb) => cb(new SyntaxError(errorMessage)),
+      close: () => undefined
+    }
+    SocketPacket.bind(server, null, { type: 'udp4' })
+
+    server.bind(serverPort, host, () => {
+      server.dispatch('Hello world', clientPort, host, err => {
+        server.close()
+
+        if (err) {
+          assert(err instanceof SyntaxError)
+          assert.equal(err.message, errorMessage)
+          return done()
+        }
+
+        done(new Error('Expected to fail but got success'))
+      })
+    })
+  })
 })
