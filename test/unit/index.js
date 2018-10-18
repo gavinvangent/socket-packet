@@ -57,15 +57,15 @@ describe('SocketPacket', () => {
     })
   })
 
-  describe('#onData', () => {
+  describe('#_onData', () => {
     describe('should swallow empty data and not emit any packet info', () => {
       const data = ''
 
-      it('invoking onData', () => {
+      it('invoking _onData', () => {
         socket.on('packet', packet => {
           assert.fail('Should not get here')
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', () => {
@@ -79,11 +79,11 @@ describe('SocketPacket', () => {
     describe('should swallow well formed data that has no content and not emit any packet info', () => {
       const data = `${SocketPacket.PACKET_STARTS_WITH}${SocketPacket.PACKET_ENDS_WITH}`
 
-      it('invoking onData', () => {
+      it('invoking _onData', () => {
         socket.on('packet', packet => {
           assert.fail('Should not get here')
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', () => {
@@ -97,7 +97,7 @@ describe('SocketPacket', () => {
     describe('should emit once and emit an error when packet is found within an invalid packet start', () => {
       const data = `123${SocketPacket.PACKET_STARTS_WITH}abc${SocketPacket.PACKET_ENDS_WITH}`
 
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         let errorHandled = false
         socket.on('packet', packet => {
           assert.equal(packet, 'abc')
@@ -109,7 +109,7 @@ describe('SocketPacket', () => {
           assert.equal(err.message, 'Malformed packet received: 123')
           errorHandled = true
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', done => {
@@ -129,7 +129,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a single packet in a whole data object', () => {
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         const message = 'abc'
         const data = socketPacket.package(message)
         const handledPackets = []
@@ -143,7 +143,7 @@ describe('SocketPacket', () => {
           handledPackets.push(packet)
           runChecks()
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', done => {
@@ -165,7 +165,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a single packet in a data object that has one item and the start of another but no end', () => {
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         const message = 'abc'
         const data = `${socketPacket.package(message)}${SocketPacket.PACKET_STARTS_WITH}123`
         const handledPackets = []
@@ -179,7 +179,7 @@ describe('SocketPacket', () => {
           handledPackets.push(packet)
           runChecks()
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', done => {
@@ -201,7 +201,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit twice for two packets in a single data object', () => {
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         const messageA = 'abc'
         const messageB = '123'
         const data = `${socketPacket.package(messageA)}${socketPacket.package(messageB)}`
@@ -219,7 +219,7 @@ describe('SocketPacket', () => {
             runChecks()
           }
         })
-        socketPacket.onData(data)
+        socketPacket._onData(data)
       })
 
       it('via emit event', done => {
@@ -245,7 +245,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a packet that is split amoungst 2 data objects', () => {
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc${SocketPacket.PACKET_ENDS_WITH}`
 
@@ -260,8 +260,8 @@ describe('SocketPacket', () => {
           handledPackets.push(packet)
           runChecks()
         })
-        socketPacket.onData(dataA)
-        socketPacket.onData(dataB)
+        socketPacket._onData(dataA)
+        socketPacket._onData(dataB)
       })
 
       it('via emit event', done => {
@@ -285,7 +285,7 @@ describe('SocketPacket', () => {
     })
 
     describe('should emit once for a packet that is split amoungst 3 data objects', () => {
-      it('invoking onData', done => {
+      it('invoking _onData', done => {
         const dataA = `${SocketPacket.PACKET_STARTS_WITH}123`
         const dataB = `abc`
         const dataC = `!@#$${SocketPacket.PACKET_ENDS_WITH}`
@@ -301,9 +301,9 @@ describe('SocketPacket', () => {
           handledPackets.push(packet)
           runChecks()
         })
-        socketPacket.onData(dataA)
-        socketPacket.onData(dataB)
-        socketPacket.onData(dataC)
+        socketPacket._onData(dataA)
+        socketPacket._onData(dataB)
+        socketPacket._onData(dataC)
       })
 
       it('via emit event', done => {

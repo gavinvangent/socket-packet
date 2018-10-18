@@ -44,6 +44,7 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
 - socket: \<Object\> instance of a [net.Socket](https://nodejs.org/docs/latest/api/net.html#net_class_net_socket)
 - logger: {optional} \<Object\> instance of a [winston](https://www.npmjs.com/package/winston) or similar logger
 - opts: {optional} \<Object\> with any customized options for SocketPacket
+  - type: {optional} \<string\> - see [type](#type)
   - startsWith: {optional} \<string\> - see [startsWith](#startswith)
   - endsWith: {optional} \<string\> - see [endsWith](#endswith)
   - encoding: {optional} \<string\> - see [encoding](#encoding)
@@ -61,7 +62,7 @@ SocketPacket.bind(socket, logger, opts)
 ```js
 socket.on('packet', packet => {
   if (packet === 'ping') {
-    socket.send('pong')
+    socket.dispatch('pong')
   }
 })
 ```
@@ -78,21 +79,29 @@ socket.on('error', error => {
 })
 ```
 
-## .send(data[, callback])
+## .dispatch(data[,port, address, callback])
 
-`socket-packet` binds a `.send` function to the socket. Using this method will package the provided data/message and the write it to the socket
+`socket-packet` binds a `.dispatch` function to the socket. Using this method will package the provided data/message and then write it to the socket
 
-- callback: {Optional} \<function\> once the data has been flushed on the socket, this callback will be invoked, as expected when using [net.Socket.write()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_write_data_encoding_callback)
+- port: {optional} \<number\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
+- address: {optional} \<string\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
+- callback: {optional} \<function\> once the data has been flushed on the socket, this callback will be invoked, as expected when using [net.Socket.write()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_write_data_encoding_callback)
 
 ```js
-socket.send('hello')
-socket.send('ping')
-socket.send({ hello: 'world'})
+socket.dispatch('hello')
+socket.dispatch('ping')
+socket.dispatch({ hello: 'world'})
 ```
 
-**NB:** although you are sending a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetparser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetstringifier) to safely get a stringified version of the JSON object to write to the socket
+**NB:** although you are dispatching a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetparser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetstringifier) to safely get a stringified version of the JSON object to write to the socket
 
 ## Options
+
+### type
+
+The type of socket being bound to. Options are:
+- `tcp` - Default
+- `udp`
 
 ### startsWith
 
@@ -109,7 +118,7 @@ Caveat: if you use [socket.setEncoding()](https://nodejs.org/docs/latest-v8.x/ap
 
 ### packetStringifier
 
-This function is used when socket.send(data[, cb]) is invoked to stringify the message/data object before writing to the socket ... The default returns the packet as is, as a string:
+This function is used when socket.dispatch(data[, cb]) is invoked to stringify the message/data object before writing to the socket ... The default returns the packet as is, as a string:
 
 ```js
 opts = {
@@ -127,7 +136,7 @@ opts = {
 
 ### packetParser
 
-This function is used when the `data` event is emitted and a packet is extracted to parse the packet to a specified format ... The default sends the packet is, as a string:
+This function is used when the `data` event is emitted and a packet is extracted to parse the packet to a specified format ... The default dispatches the packet as is, as a string:
 
 ```js
 opts = {
@@ -144,6 +153,7 @@ opts = {
 ```
 
 ## Example
+### TCP
 
 server.js:
 
@@ -167,8 +177,8 @@ const server = net.createServer(socket => {
         console.log('ping received')
 
         setTimeout(() => {
-          socket.send('pong', () => {
-            console.log('pong sent')
+          socket.dispatch('pong', () => {
+            console.log('pong dispatched')
           })
         }, 500)
         break
@@ -186,12 +196,13 @@ const server = net.createServer(socket => {
   })
 
   socket.on('close', hadError => {
-    console.log('Client disconnected')
+    console.log(`Client disconnected (with error: ${hadError})`)
   })
 })
 
 server.listen(port, host, () => {
-  console.log(`Server started on ${server.address().address}:${server.address().port}`)
+  const { address, port } = server.address()
+  console.log(`Server started on ${address}:${port}`)
 })
 ```
 
@@ -222,18 +233,123 @@ client.on('packet', packet => {
   }
 })
 
+client.on('error', err => {
+  console.log('Error:' + err)
+})
+
 client.on('close', hasError => {
-  console.log(`Connection closed with error = ${!!hasError}`)
+  console.log(`Connection closed (has error: ${!!hasError})`)
   clearInterval(interval)
 })
 
-client.on('error', err => {
-  console.log(err)
-})
-
 const interval = setInterval(() => {
-  client.send('ping', () => {
-    console.log('ping sent')
+  client.dispatch('ping', () => {
+    console.log('ping dispatched')
   })
 }, 2000)
 ```
+### UDP
+
+server.js:
+
+```js
+import dgram from 'dgram'
+import SocketPacket from 'socket-packet'
+/* OR */
+const dgram = require('dgram')
+const SocketPacket = require('socket-packet')
+
+const port = process.env.PORT || 9090
+const host = process.env.HOST || 'localhost'
+
+const serverSocket = dgram.createSocket({ type: 'udp4', sendBufferSize: 8192 })
+SocketPacket.bind(serverSocket, null, { type: 'udp4' })
+
+serverSocket.on('packet', (packet, rInfo) => {
+  switch (packet) {
+    case 'ping':
+      console.log('ping received')
+
+      serverSocket.dispatch('pong', rInfo.port, rInfo.address, () => {
+        console.log('pong dispatched')
+      })
+      break
+    default:
+      console.log(`Unknown message received: ${packet}`)
+      break
+  }
+})
+
+serverSocket.on('error', err => {
+  console.log('Server error:', err)
+})
+
+serverSocket.on('end', () => {
+  console.log('Server ended')
+})
+
+serverSocket.on('close', hadError => {
+  console.log('Server closed')
+})
+
+serverSocket.bind(port, host, () => {
+  const { address, port } = serverSocket.address()
+  console.log(`Server running on ${address}:${port}`)
+})
+```
+
+client.js:
+
+```js
+import net from 'net'
+import SocketPacket from 'socket-packet'
+/* OR */
+const dgram = require('dgram')
+const SocketPacket = require('socket-packet')
+
+const port = process.env.PORT || 9091
+const host = process.env.HOST || 'localhost'
+
+const serverPort = process.env.SERVER_PORT || 9090
+const serverHost = process.env.SERVER_HOST || 'localhost'
+
+const clientSocket = dgram.createSocket({ type: 'udp4', sendBufferSize: 8192 })
+SocketPacket.bind(clientSocket, null, { type: 'udp4' })
+
+clientSocket.on('packet', packet => {
+  switch (packet) {
+    case 'pong':
+      console.log('pong received')
+      break
+    default:
+      console.log(`Unknown message received: ${packet}`)
+      break
+  }
+})
+
+clientSocket.on('error', err => {
+  console.log('Client error:', err)
+})
+
+clientSocket.on('end', () => {
+  console.log('Client ended')
+})
+
+clientSocket.on('close', hadError => {
+  console.log('Client closed')
+})
+
+clientSocket.bind(port, host, () => {
+  const { address, port } = clientSocket.address()
+  console.log(`Client running on ${address}:${port}`)
+
+  setInterval(() => {
+    clientSocket.dispatch('ping', serverPort, serverHost, () => {
+      console.log('ping dispatched')
+    })
+  }, 2000)
+})
+```
+
+Caveats:
+- Please make sure you know about UDP length limits and how nodejs errors out when misconfigured. UDP has a min and max length per os. Please ensure you use safe values, else socket-packet will throw errors (as thrown by nodejs' udp module). You may notice that I used `8192` in my examples: I feel this value is a safe value all round, but you may use your own defined value

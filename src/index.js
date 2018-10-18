@@ -19,33 +19,48 @@ class SocketPacket {
     switch (this._type.toLowerCase()) {
       case 'net':
       case 'tcp':
-        this._socket.on('data', data => this.onData(data))
-        this._socket.dispatch = (data, cb) => socket.write(this.package(data), cb)
+        this._socket.on('data', data => this._onData(data))
+        this._socket.dispatch = (message, cb) => socket.write(this.package(message), cb)
         break
       case 'udp':
       case 'udp4':
       case 'udp6':
       case 'dgram':
       case 'datagram':
-        this._socket.on('message', (message, rInfo) => this.onData(message, rInfo))
+        this._socket.on('message', (message, rInfo) => this._onData(message, rInfo))
         this._socket.dispatch = (message, port, address, cb) => {
-          const size = this._socket && this._socket.getSendBufferSize ? this._socket.getSendBufferSize() : 512
-          let packet = this.package(message)
+          const size = this._socket && this._socket.getSendBufferSize ? this._socket.getSendBufferSize() : 8192
+          this._socket.setSendBufferSize(size)
 
-          while (packet.length) {
+          const sendPacket = (packet, done) => {
             const hasOverflow = packet.length > size
             const blob = hasOverflow ? packet.substr(0, size) : packet
             packet = hasOverflow ? packet.substr(size) : ''
-            this._socket.send(blob, port, address, hasOverflow ? undefined : cb)
+
+            this._socket.send(blob, port, address, err => {
+              if (err) {
+                return done(err)
+              }
+
+              if (!hasOverflow) {
+                return done()
+              }
+
+              sendPacket(packet, done)
+            })
           }
+
+          const packet = this.package(message)
+          return sendPacket(packet, cb || (() => undefined))
         }
+
         break
       default:
         throw new Error('SocketPacket constructed with invalid arguments')
     }
   }
 
-  onData (data, rInfo) {
+  _onData (data, rInfo) {
     this._buffer += data.toString(this._encoding)
 
     let idx
