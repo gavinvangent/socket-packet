@@ -57,13 +57,21 @@ describe('UDP/Datagram usage', () => {
     })
 
     it('should be able to interface successfully using big data', done => {
-      const server = dgram.createSocket({ type: 'udp4', sendBufferSize: 4 })
+      const server = dgram.createSocket({ type: 'udp4', sendBufferSize: 8192 })
       server.unref()
       SocketPacket.bind(server, null, { type: 'dgram' })
 
-      const client = dgram.createSocket({ type: 'udp4', sendBufferSize: 4 })
+      const client = dgram.createSocket({ type: 'udp4', sendBufferSize: 8192 })
       client.unref()
       SocketPacket.bind(client, null, { type: 'datagram' })
+
+      const onError = err => {
+        if (err) {
+          client.close()
+          server.close()
+          done(err)
+        }
+      }
 
       let messageCount = 0
       server.on('message', message => {
@@ -82,30 +90,26 @@ describe('UDP/Datagram usage', () => {
         }, 100)
       })
 
-      server.on('error', err => {
-        client.close()
-        server.close()
-        done(err)
-      })
+      server.on('error', onError)
 
       client.on('packet', (packet, rInfo) => {
         assert.equal(rInfo.port, serverPort)
         assert.equal(rInfo.address, host)
         client.dispatch(packet, rInfo.port, rInfo.address)
       })
-      client.on('error', err => {
-        client.close()
-        server.close()
-        done(err)
-      })
+      client.on('error', onError)
 
-      let message = 'abcdefghijklmnopqrstuvwxyz'
+      const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+      let message = ''
 
       server.bind(serverPort, host, () => {
         client.bind(clientPort, host, () => {
-          // server.setSendBufferSize(4)
-          // client.setSendBufferSize(4)
-          server.dispatch(message, clientPort, host)
+          const size = server.getSendBufferSize()
+          while (message.length <= size) {
+            message += alphabet
+          }
+
+          server.dispatch(message, clientPort, host, onError)
         })
       })
     })
