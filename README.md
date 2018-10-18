@@ -44,6 +44,7 @@ Binds `socket-packet` to an instance of a socket. This will attach the necessary
 - socket: \<Object\> instance of a [net.Socket](https://nodejs.org/docs/latest/api/net.html#net_class_net_socket)
 - logger: {optional} \<Object\> instance of a [winston](https://www.npmjs.com/package/winston) or similar logger
 - opts: {optional} \<Object\> with any customized options for SocketPacket
+  - type: {optional} \<string\> - see [type](#type)
   - startsWith: {optional} \<string\> - see [startsWith](#startswith)
   - endsWith: {optional} \<string\> - see [endsWith](#endswith)
   - encoding: {optional} \<string\> - see [encoding](#encoding)
@@ -95,6 +96,12 @@ socket.dispatch({ hello: 'world'})
 **NB:** although you are dispatching a JSON object, when it arrives on the other side of the socket, it would be a string/buffer ... You can use the [packetParser](#packetparser) on the other end of the socket to parse it as JSON; remember to use the [packetStringifier](#packetstringifier) to safely get a stringified version of the JSON object to write to the socket
 
 ## Options
+
+### type
+
+The type of socket being bound to. Options are:
+- `tcp` - Default
+- `udp`
 
 ### startsWith
 
