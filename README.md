@@ -23,7 +23,7 @@ npm install socket-packet
 ## How to use
 
 ```js
-import SocketPacket from 'SocketPacket'
+import SocketPacket from 'socket-packet'
 
 // Once you have a socket, or for example:
 // const socket = new Socket()
@@ -345,4 +345,4 @@ clientSocket.bind(port, host, () => {
 ```
 
 Caveats:
-- Please make sure you know about UDP length limits and how nodejs errors out when misconfigured. UDP has a min and max length per os. Please ensure you use safe values, else socket-packet will throw errors (as thrown by nodejs' udp module). You may notice that i used `8192` in my examples. I feel this value is a safe value all round, but you may use your own defined value
+- Please make sure you know about UDP length limits and how nodejs errors out when misconfigured. UDP has a min and max length per os. Please ensure you use safe values, else socket-packet will throw errors (as thrown by nodejs' udp module). You may notice that I used `8192` in my examples: I feel this value is a safe value all round, but you may use your own defined value
