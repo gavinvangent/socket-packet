@@ -83,9 +83,9 @@ socket.on('error', error => {
 
 `socket-packet` binds a `.dispatch` function to the socket. Using this method will package the provided data/message and then write it to the socket
 
-- port: {Optional} \<number\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
-- address: {Optional} \<string\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
-- callback: {Optional} \<function\> once the data has been flushed on the socket, this callback will be invoked, as expected when using [net.Socket.write()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_write_data_encoding_callback)
+- port: {optional} \<number\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
+- address: {optional} \<string\> UDP specific, not to be used with TCP, see [dgram.send()](https://nodejs.org/dist/latest-v8.x/docs/api/dgram.html#dgram_socket_send_msg_offset_length_port_address_callback)
+- callback: {optional} \<function\> once the data has been flushed on the socket, this callback will be invoked, as expected when using [net.Socket.write()](https://nodejs.org/docs/latest-v8.x/api/net.html#net_socket_write_data_encoding_callback)
 
 ```js
 socket.dispatch('hello')
