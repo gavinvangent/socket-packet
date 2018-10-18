@@ -19,15 +19,15 @@ class SocketPacket {
     switch (this._type.toLowerCase()) {
       case 'net':
       case 'tcp':
-        this._socket.on('data', data => this.onData(data))
-        this._socket.dispatch = (data, cb) => socket.write(this.package(data), cb)
+        this._socket.on('data', data => this._onData(data))
+        this._socket.dispatch = (message, cb) => socket.write(this.package(message), cb)
         break
       case 'udp':
       case 'udp4':
       case 'udp6':
       case 'dgram':
       case 'datagram':
-        this._socket.on('message', (message, rInfo) => this.onData(message, rInfo))
+        this._socket.on('message', (message, rInfo) => this._onData(message, rInfo))
         this._socket.dispatch = (message, port, address, cb) => {
           const size = this._socket && this._socket.getSendBufferSize ? this._socket.getSendBufferSize() : 8192
           this._socket.setSendBufferSize(size)
@@ -60,10 +60,8 @@ class SocketPacket {
     }
   }
 
-  onData (data, rInfo) {
+  _onData (data, rInfo) {
     this._buffer += data.toString(this._encoding)
-
-    // console.log('data', data.toString(this._encoding))
 
     let idx
     const packets = []
