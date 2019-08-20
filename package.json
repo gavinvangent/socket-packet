@@ -7,13 +7,13 @@
     "lib"
   ],
   "scripts": {
-    "build": "babel ./src -d ./lib",
-    "coverage": "nyc --reporter=html --reporter=text --reporter=text-lcov --reporter=lcov npm test | codacy-coverage --token=$CODACY_PROJECT_TOKEN --projectName=socket-packet",
+    "build": "npx babel ./src -d ./lib",
+    "coverage": "npx nyc --reporter=html --reporter=text --reporter=text-lcov --reporter=lcov npm test | npx codacy-coverage --token=$CODACY_PROJECT_TOKEN --projectName=socket-packet",
     "prepublishOnly": "npm run tc && npm run build",
-    "pretest": "standard | snazzy && eslint ./src",
-    "report": "nyc npm test",
+    "pretest": "(npx standard | npx snazzy) && npx eslint ./src",
+    "report": "npx nyc npm test",
     "tc": "npm run test-with-coverage",
-    "test": "NODE_ENV=test mocha ./test/",
+    "test": "NODE_ENV=test npx mocha ./test/",
     "test-with-coverage": "npm run report && npm run coverage"
   },
   "repository": {
@@ -36,7 +36,7 @@
     "babel-runtime": "^6.26.0"
   },
   "devDependencies": {
-    "assert": "^1.4.1",
+    "assert": "^2.0.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
@@ -53,7 +53,7 @@
     "codacy-coverage": "^3.0.0",
     "eslint": "^4.19.1",
     "mocha": "^5.2.0",
-    "nyc": "^12.0.2",
+    "nyc": "^14.1.1",
     "pre-commit": "^1.2.2",
     "snazzy": "^7.1.1",
     "standard": "^11.0.1"
